@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>과수원 일기</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8fafc; color: #1e293b; }
+    /* 체크박스 크기 키우기 (50대 타겟) */
+    input[type="checkbox"] { width: 1.5rem; height: 1.5rem; cursor: pointer; }
+  </style>
+</head>
+<body class="p-4 max-w-md mx-auto relative pb-24">
+
+  <!-- 헤더 -->
+  <header class="mb-6 pt-4 text-center">
+    <h1 class="text-3xl font-extrabold text-green-700 mb-2">과수원 일기 📝</h1>
+    <p id="todayDate" class="text-lg text-slate-500 font-medium"></p>
+  </header>
+
+  <!-- 날씨 위젯 -->
+  <section class="bg-white rounded-xl shadow-sm p-6 mb-6 border-l-8 border-yellow-400">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-bold mb-1">오늘의 날씨</h2>
+        <p class="text-3xl font-black text-slate-800">24°C <span class="text-lg text-slate-500 font-medium">/ 강수 0%</span></p>
+      </div>
+      <div class="text-5xl">☀️</div>
+    </div>
+  </section>
+
+  <!-- 작물 선택 탭 -->
+  <section class="mb-6">
+    <h3 class="text-xl font-bold mb-3">작물 선택</h3>
+    <div class="grid grid-cols-2 gap-3" id="cropTabs">
+      <button onclick="selectCrop('apple')" id="tab-apple" class="crop-btn bg-white border-2 border-slate-200 text-slate-700 py-3 rounded-xl font-bold text-lg hover:border-green-500 transition">🍎 사과</button>
+      <button onclick="selectCrop('pear')" id="tab-pear" class="crop-btn bg-white border-2 border-slate-200 text-slate-700 py-3 rounded-xl font-bold text-lg hover:border-green-500 transition">🍐 배</button>
+      <button onclick="selectCrop('peach')" id="tab-peach" class="crop-btn bg-white border-2 border-slate-200 text-slate-700 py-3 rounded-xl font-bold text-lg hover:border-green-500 transition">🍑 복숭아</button>
+      <button onclick="selectCrop('grape')" id="tab-grape" class="crop-btn bg-white border-2 border-slate-200 text-slate-700 py-3 rounded-xl font-bold text-lg hover:border-green-500 transition">🍇 포도</button>
+    </div>
+  </section>
+
+  <!-- 추천 작업 목록 -->
+  <section class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-slate-100">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><span id="cropTitleIcon">🍎</span> 오늘의 추천 작업</h3>
+    <div id="taskList" class="space-y-4">
+      <!-- JS로 렌더링 -->
+    </div>
+  </section>
+
+  <!-- 메모 작성 -->
+  <section class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-slate-100">
+    <h3 class="text-xl font-bold mb-3">작업 메모</h3>
+    <textarea id="memoInput" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-lg focus:ring-2 focus:ring-green-500 outline-none resize-none h-32" placeholder="오늘 농사 특이사항을 적어주세요 (예: 벌레가 조금 보임)"></textarea>
+  </section>
+
+  <!-- 하단 고정 저장 버튼 -->
+  <div class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] flex justify-center z-50">
+    <button onclick="saveDiary()" class="w-full max-w-md bg-green-600 text-white font-bold text-xl py-4 rounded-xl shadow-md hover:bg-green-700 transition active:scale-95">
+      💾 일지 저장하기
+    </button>
+  </div>
+
+  <script>
+    // 날짜 설정
+    const now = new Date();
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    document.getElementById('todayDate').textContent = \`\${now.getFullYear()}년 \${now.getMonth()+1}월 \${now.getDate()}일 (\${days[now.getDay()]})\`;
+    const todayKey = \`diary_\${now.getFullYear()}_\${now.getMonth()+1}_\${now.getDate()}\`;
+
+    // 작물별 데이터 모델
+    const cropData = {
+      apple: { icon: '🍎', tasks: ['사과나무 적과(열매솎기) 진행', '진딧물 예방 약제 살포', '과수원 제초 작업'] },
+      pear: { icon: '🍐', tasks: ['배나무 봉지 씌우기 준비', '배나무 잎 솎아주기', '배수구 정비'] },
+      peach: { icon: '🍑', tasks: ['복숭아 순나방 방제', '웃자란 가지 자르기(도장지 제거)', '관수(물주기) 작업'] },
+      grape: { icon: '🍇', tasks: ['포도 순지르기', '포도 알 솎기', '포도원 환기 및 습도 조절'] }
+    };
+
+    let currentCrop = 'apple';
+    let savedData = JSON.parse(localStorage.getItem(todayKey)) || {
+      apple: [false, false, false],
+      pear: [false, false, false],
+      peach: [false, false, false],
+      grape: [false, false, false],
+      memo: ""
+    };
+
+    function selectCrop(crop) {
+      currentCrop = crop;
+      
+      // 탭 스타일 변경
+      document.querySelectorAll('.crop-btn').forEach(btn => {
+        btn.classList.remove('bg-green-50', 'border-green-500', 'text-green-800');
+        btn.classList.add('bg-white', 'border-slate-200');
+      });
+      const activeBtn = document.getElementById(\`tab-\${crop}\`);
+      activeBtn.classList.remove('bg-white', 'border-slate-200');
+      activeBtn.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+
+      // 아이콘 및 태스크 렌더링
+      document.getElementById('cropTitleIcon').textContent = cropData[crop].icon;
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = '';
+      
+      cropData[crop].tasks.forEach((task, idx) => {
+        const isChecked = savedData[crop][idx] ? 'checked' : '';
+        const lineThrough = savedData[crop][idx] ? 'line-through text-slate-400' : 'text-slate-800';
+        taskList.innerHTML += \`
+          <label class="flex items-center gap-4 cursor-pointer p-2 hover:bg-slate-50 rounded-lg">
+            <input type="checkbox" onchange="toggleTask('\${crop}', \${idx}, this.checked)" \${isChecked} class="accent-green-600">
+            <span class="text-lg font-medium \${lineThrough}" id="taskText_\${crop}_\${idx}">\${task}</span>
+          </label>
+        \`;
+      });
+
+      document.getElementById('memoInput').value = savedData.memo || "";
+    }
+
+    function toggleTask(crop, idx, isChecked) {
+      savedData[crop][idx] = isChecked;
+      const textSpan = document.getElementById(\`taskText_\${crop}_\${idx}\`);
+      if (isChecked) {
+        textSpan.classList.add('line-through', 'text-slate-400');
+        textSpan.classList.remove('text-slate-800');
+      } else {
+        textSpan.classList.remove('line-through', 'text-slate-400');
+        textSpan.classList.add('text-slate-800');
+      }
+    }
+
+    function saveDiary() {
+      savedData.memo = document.getElementById('memoInput').value;
+      localStorage.setItem(todayKey, JSON.stringify(savedData));
+      alert("✅ 오늘의 영농 일지가 안전하게 저장되었습니다!");
+    }
+
+    // 초기화
+    selectCrop('apple');
+  </script>
+</body>
+</html>
