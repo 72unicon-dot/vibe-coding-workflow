@@ -26,7 +26,8 @@ function bindGlobalEvents() {
   document.getElementById("prevBtn").addEventListener("click", goPrev);
   document.getElementById("nextBtn").addEventListener("click", goNext);
   document.getElementById("resetBtn").addEventListener("click", resetAll);
-  document.getElementById("modeToggle").addEventListener("click", toggleMode);
+  document.getElementById("demoModeBtn").addEventListener("click", setDemoMode);
+  document.getElementById("directModeBtn").addEventListener("click", setDirectMode);
   
   const apiSettingsBtn = document.getElementById("apiSettingsBtn");
   if (apiSettingsBtn) apiSettingsBtn.addEventListener("click", openApiModal);
@@ -154,17 +155,13 @@ function renderStage() {
           `).join("")}
         </ul>
       </div>
-
-      <!-- 시나리오 선택 (3단계 진입 전) -->
-      ${state.currentStage === 0 && !state.scenarioId ? renderScenarioPicker() : ''}
-
-
+      
       <!-- 프롬프트 템플릿 -->
       <div class="mb-6">
         <h3 class="font-bold text-slate-900 mb-2 flex items-center gap-2">
           <span>💬</span> AI 프롬프트 템플릿
         </h3>
-        <textarea id="promptTextarea" class="w-full bg-slate-900 text-slate-100 rounded-xl p-5 font-mono text-sm whitespace-pre-wrap leading-relaxed shadow-inner resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[160px]">${escapeHtml(state.userPrompts[state.currentStage] !== undefined ? state.userPrompts[state.currentStage] : stage.promptTemplate)}</textarea>
+        <textarea id="promptTextarea" class="w-full bg-slate-900 text-slate-100 rounded-xl p-5 font-mono text-sm whitespace-pre-wrap leading-relaxed shadow-inner resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[480px]">${escapeHtml(state.userPrompts[state.currentStage] !== undefined ? state.userPrompts[state.currentStage] : stage.promptTemplate)}</textarea>
         <div class="mt-2 flex gap-2">
           
           <button onclick="copyToClipboard(document.getElementById('promptTextarea').value)"
@@ -263,15 +260,6 @@ function renderStage() {
     });
   }
 
-  // 시나리오 선택 버튼 이벤트
-  document.querySelectorAll("[data-scenario]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.scenarioId = btn.dataset.scenario;
-      renderStage();
-      renderStepNav();
-    });
-  });
-
   // 프롬프트 수정 이벤트
   const promptTextarea = document.getElementById("promptTextarea");
   if (promptTextarea) {
@@ -320,7 +308,18 @@ function renderStage() {
   const sendToNextStageBtn = document.getElementById("sendToNextStageBtn");
   if (sendToNextStageBtn) {
     sendToNextStageBtn.addEventListener("click", () => {
-      let content = state.aiResults[state.currentStage];
+      let content = "";
+      const scenario = state.scenarioId ? DEMO_SCENARIOS.find(s => s.id === state.scenarioId) : null;
+      
+      for (let i = 0; i <= state.currentStage; i++) {
+        const stageKey = STAGES[i].key;
+        const resultText = state.aiResults[i] || (scenario && scenario.outputs[stageKey] ? scenario.outputs[stageKey].content : null);
+        
+        if (resultText) {
+          content += `\n[${STAGES[i].title.split('·')[1].trim()}]\n${resultText}\n`;
+        }
+      }
+      
       const nextStageIdx = state.currentStage + 1;
       const nextStage = STAGES[nextStageIdx];
       
@@ -328,7 +327,7 @@ function renderStage() {
         ? state.userPrompts[nextStageIdx] 
         : nextStage.promptTemplate;
         
-      const combinedPrompt = `[이전 단계 결과 참고]\n${content}\n\n---\n\n${nextPrompt}`;
+      const combinedPrompt = `[이전 단계 결과 참고]\n${content}\n---\n\n${nextPrompt}`;
       state.userPrompts[nextStageIdx] = combinedPrompt;
       
       goNext();
@@ -394,26 +393,6 @@ function renderStage() {
   updateProgress();
 }
 
-function renderScenarioPicker() {
-  return `
-    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-5">
-      <h3 class="font-bold text-blue-900 mb-3 flex items-center gap-2">
-        <span>🎯</span> 시연용 데모 시나리오를 선택하세요
-      </h3>
-      <p class="text-sm text-blue-800 mb-4">선택한 시나리오의 단계별 결과물이 다음 단계부터 함께 표시됩니다.</p>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        ${DEMO_SCENARIOS.map(s => `
-          <button data-scenario="${s.id}"
-            class="text-left p-4 bg-white border-2 border-blue-200 rounded-xl hover:border-blue-500 hover:shadow-md transition">
-            <div class="font-bold text-slate-900 mb-1">${s.name}</div>
-            <div class="text-xs text-slate-600">${s.description}</div>
-          </button>
-        `).join("")}
-      </div>
-    </div>
-  `;
-}
-
 // ============================================================
 // 네비게이션
 // ============================================================
@@ -450,12 +429,20 @@ function resetAll() {
   renderStepNav();
 }
 
-function toggleMode() {
-  state.mode = state.mode === "demo" ? "input" : "demo";
-  const btn = document.getElementById("modeToggle");
-  btn.textContent = state.mode === "demo" ? "📝 데모 모드" : "✍️ 직접 입력 모드";
-  btn.classList.toggle("bg-indigo-600");
-  btn.classList.toggle("bg-purple-600");
+function setDemoMode() {
+  state.mode = "demo";
+  state.scenarioId = "todo"; // 데모 모드 클릭 시 바로 할일 관리 앱 시나리오 적용
+  renderStage();
+  renderStepNav();
+  showToast("데모 모드로 설정되었습니다.");
+}
+
+function setDirectMode() {
+  state.mode = "input";
+  state.scenarioId = null; // 직접 입력 모드 시 시나리오 해제
+  renderStage();
+  renderStepNav();
+  showToast("직접 입력 모드로 설정되었습니다.");
 }
 
 // ============================================================

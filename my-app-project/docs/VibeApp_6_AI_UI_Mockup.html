@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>농사 도우미</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <!-- 로그인 화면 -->
+    <div class="flex items-center justify-center h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h1 class="text-2xl font-bold text-primary text-center mb-6">농사 도우미</h1>
+            <input type="text" placeholder="아이디를 입력하세요" class="border border-gray-300 rounded-lg py-2 px-4 mb-4 w-full">
+            <input type="password" placeholder="비밀번호를 입력하세요" class="border border-gray-300 rounded-lg py-2 px-4 mb-4 w-full">
+            <button class="bg-primary text-white py-2 rounded-lg w-full">로그인</button>
+            <p class="text-center mt-4"><a href="#" class="text-secondary">회원가입</a></p>
+        </div>
+    </div>
+
+    <!-- 홈 화면 -->
+    <div class="p-4">
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-4">
+            <h1 class="text-2xl font-bold text-primary mb-4">오늘의 작업</h1>
+            <ul>
+                <li class="border-b border-gray-200 py-3 flex justify-between">
+                    <span>물주기</span>
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-primary">
+                </li>
+                <li class="border-b border-gray-200 py-3 flex justify-between">
+                    <span>비료 주기</span>
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-primary">
+                </li>
+            </ul>
+            <div class="mt-4">
+                <h2 class="text-xl font-bold">날씨 정보</h2>
+                <p class="text-lg">현재 온도: <span class="font-bold">25°C</span></p>
+                <p class="text-lg">예보: 내일 비예보</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 작업 관리 화면 -->
+    <div class="p-4">
+        <h1 class="text-2xl font-bold text-primary mb-4">작업 관리</h1>
+        <ul class="bg-white p-4 rounded-lg shadow-lg mb-4">
+            <li class="border-b border-gray-200 py-3 flex justify-between">
+                <span>작업명</span>
+                <button class="text-red-500">삭제</button>
+            </li>
+        </ul>
+        <button class="bg-secondary text-white py-2 rounded-lg w-full">작업 추가</button>
+    </div>
+
+    <!-- 날씨 화면 -->
+    <div class="p-4">
+        <h1 class="text-2xl font-bold text-primary mb-4">날씨 정보</h1>
+        <select class="border border-gray-300 rounded-lg py-2 px-4 mb-4 w-full">
+            <option>위치 선택</option>
+        </select>
+        <div class="bg-white p-4 rounded-lg shadow-lg">
+            <p class="text-lg">현재 온도: <span class="font-bold">25°C</span></p>
+            <p class="text-lg">예보: 내일 비예보</p>
+        </div>
+    </div>
+
+    <!-- 작물 관리 화면 -->
+    <div class="p-4">
+        <h1 class="text-2xl font-bold text-primary mb-4">작물 관리</h1>
+        <ul class="bg-white p-4 rounded-lg shadow-lg mb-4">
+            <li class="border-b border-gray-200 py-3">사과</li>
+            <li class="border-b border-gray-200 py-3">배</li>
+            <li class="border-b border-gray-200 py-3">봉숭아</li>
+            <li class="border-b border-gray-200 py-3">포도</li>
+        </ul>
+        <button class="bg-secondary text-white py-2 rounded-lg w-full">작물 추가</button>
+    </div>
+
+    <!-- 상담 기능 화면 -->
+    <div class="p-4">
+        <h1 class="text-2xl font-bold text-primary mb-4">AI 상담</h1>
+        <button class="bg-secondary text-white py-2 rounded-lg w-full mb-4">작물 사진 업로드</button>
+        <div class="bg-white p-4 rounded-lg shadow-lg">
+            <p class="text-lg">AI 분석 결과</p>
+            <p>건강 상태 분석 및 조치 제안</p>
+        </div>
+    </div>
+
+    <!-- 피드백 화면 -->
+    <div class="p-4">
+        <h1 class="text-2xl font-bold text-primary mb-4">피드백</h1>
+        <p>앱 사용 만족도 평가</p>
+        <div class="flex space-x-2">
+            <span>☆</span>
+            <span>☆</span>
+            <span>☆</span>
+            <span>☆</span>
+            <span>☆</span>
+        </div>
+        <input type="text" placeholder="추가 의견을 남겨주세요" class="border border-gray-300 rounded-lg py-2 px-4 mb-4 w-full">
+        <button class="bg-secondary text-white py-2 rounded-lg w-full">제출</button>
+    </div>
+
+</body>
+</html>
