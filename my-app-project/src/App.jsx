@@ -1,45 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import Login from './components/Login';
-import Home from './components/Home';
-import TaskDetail from './components/TaskDetail';
+import Onboarding from './components/Onboarding';
+import Dashboard from './components/Dashboard';
+import Journal from './components/Journal';
+import Diagnosis from './components/Diagnosis';
 import Album from './components/Album';
+import Settings from './components/Settings';
+import BottomNav from './components/BottomNav';
 
 export default function App() {
-  const [user, setUser] = useState(null);
-  const [view, setView] = useState('home'); // 'home', 'task', 'album'
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [farmInfo, setFarmInfo] = useState(null);
+  const [activeTab, setActiveTab] = useState('home');
+  const [loading, setLoading] = useState(true);
 
-  // 로그인 상태 복원
   useEffect(() => {
-    const stored = localStorage.getItem('vibe_user');
-    if (stored) setUser(JSON.parse(stored));
+    const stored = localStorage.getItem('farm_info');
+    if (stored) {
+      setFarmInfo(JSON.parse(stored));
+    }
+    setLoading(false);
   }, []);
 
-  if (!user) {
-    return <Login onLogin={setUser} />;
+  const handleOnboardingComplete = (info) => {
+    localStorage.setItem('farm_info', JSON.stringify(info));
+    setFarmInfo(info);
+  };
+
+  if (loading) return null;
+
+  if (!farmInfo) {
+    return <Onboarding onComplete={handleOnboardingComplete} />;
   }
 
-  const handleSelectTask = (id) => {
-    setSelectedTaskId(id);
-    setView('task');
-  };
-
-  const handleOpenAlbum = () => setView('album');
-
-  const handleBackHome = () => {
-    setView('home');
-    setSelectedTaskId(null);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      {view === 'home' && (
-        <Home onSelectTask={handleSelectTask} onOpenAlbum={handleOpenAlbum} />
-      )}
-      {view === 'task' && selectedTaskId && (
-        <TaskDetail taskId={selectedTaskId} onBack={handleBackHome} />
-      )}
-      {view === 'album' && <Album onBack={handleBackHome} />}
+    <div className="min-h-screen bg-surface pb-20 font-sans text-gray-900">
+      <div className="max-w-md mx-auto min-h-screen bg-white shadow-xl relative overflow-hidden">
+        {activeTab === 'home' && <Dashboard farmInfo={farmInfo} />}
+        {activeTab === 'journal' && <Journal />}
+        {activeTab === 'diagnosis' && <Diagnosis />}
+        {activeTab === 'album' && <Album />}
+        {activeTab === 'settings' && <Settings />}
+        
+        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
     </div>
   );
 }
