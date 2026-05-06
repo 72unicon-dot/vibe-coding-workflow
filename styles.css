@@ -1,0 +1,103 @@
+/* ============================================================
+   Vibe Coding Demo - Custom Styles
+   ============================================================ */
+
+* {
+  font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+}
+
+pre, code, .font-mono {
+  font-family: 'JetBrains Mono', 'Consolas', monospace !important;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 스크롤바 - 연한 톤 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 단계 진입 시 부드러운 등장 */
+#stageContent {
+  animation: fadeSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 코드 블록 가독성 */
+.bg-slate-900 pre, .bg-slate-900 {
+  line-height: 1.7;
+}
+
+/* 모바일 반응형 보정 */
+@media (max-width: 1023px) {
+  aside .sticky {
+    position: relative !important;
+    top: auto !important;
+  }
+}
+
+/* 포커스 링 */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* 토스트 등장 애니메이션 */
+.fixed.bottom-6 {
+  animation: toastSlide 0.3s ease-out;
+}
+
+@keyframes toastSlide {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* 단계 네비게이션 hover 효과 강화 */
+[data-step] {
+  transition: all 0.2s ease;
+}
+
+/* 인쇄 시 강의 자료로 활용 가능 */
+@media print {
+  header, aside, .flex.items-center.justify-between {
+    display: none !important;
+  }
+  main {
+    grid-template-columns: 1fr !important;
+  }
+  #stageContent {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

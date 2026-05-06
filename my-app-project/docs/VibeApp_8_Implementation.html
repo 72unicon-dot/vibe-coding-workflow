@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>농사 도우미</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <!-- 로그인 화면 -->
+    <div id="login" class="flex items-center justify-center h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h1 class="text-2xl font-bold text-primary text-center mb-6">농사 도우미</h1>
+            <input type="text" id="username" placeholder="아이디를 입력하세요" class="border border-gray-300 rounded-lg py-2 px-4 mb-4 w-full">
+            <input type="password" id="password" placeholder="비밀번호를 입력하세요" class="border border-gray-300 rounded-lg py-2 px-4 mb-4 w-full">
+            <button onclick="login()" class="bg-primary text-white py-2 rounded-lg w-full">로그인</button>
+            <p class="text-center mt-4"><a href="#" class="text-secondary">회원가입</a></p>
+        </div>
+    </div>
+
+    <!-- 홈 화면 -->
+    <div id="home" class="p-4 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-4">
+            <h1 class="text-2xl font-bold text-primary mb-4">오늘의 작업</h1>
+            <ul id="task-list">
+                <!-- 작업 리스트가 여기에 동적으로 추가됨 -->
+            </ul>
+            <div class="mt-4">
+                <h2 class="text-xl font-bold">날씨 정보</h2>
+                <p class="text-lg">현재 온도: <span class="font-bold" id="current-temp">25°C</span></p>
+                <p class="text-lg">예보: 내일 비예보</p>
+            </div>
+            <button onclick="showAddTask()" class="bg-secondary text-white py-2 rounded-lg w-full mt-4">작업 추가</button>
+        </div>
+    </div>
+
+    <!-- 작업 관리 화면 -->
+    <div id="task-management" class="p-4 hidden">
+        <h1 class="text-2xl font-bold text-primary mb-4">작업 관리</h1>
+        <ul id="task-management-list" class="bg-white p-4 rounded-lg shadow-lg mb-4">
+            <!-- 작업 리스트가 여기에 동적으로 추가됨 -->
+        </ul>
+        <button onclick="showAddTask()" class="bg-secondary text-white py-2 rounded-lg w-full">작업 추가</button>
+        <button onclick="showHome()" class="bg-primary text-white py-2 rounded-lg w-full mt-4">홈으로 돌아가기</button>
+    </div>
+
+    <!-- 작업 추가 화면 -->
+    <div id="add-task" class="p-4 hidden">
+        <h1 class="text-2xl font-bold text-primary mb-4">작업 추가</h1>
+        <input type="text" id="new-task" placeholder="작업명을 입력하세요" class="border border-gray-300 rounded-lg py-2 px-4 mb-4 w-full">
+        <button onclick="addTask()" class="bg-secondary text-white py-2 rounded-lg w-full">추가</button>
+        <button onclick="showHome()" class="bg-primary text-white py-2 rounded-lg w-full mt-4">홈으로 돌아가기</button>
+    </div>
+
+    <!-- 피드백 화면 -->
+    <div id="feedback" class="p-4 hidden">
+        <h1 class="text-2xl font-bold text-primary mb-4">피드백</h1>
+        <p>앱 사용 만족도 평가</p>
+        <div class="flex space-x-2 mb-4">
+            <span class="star" onclick="selectRating(1)">☆</span>
+            <span class="star" onclick="selectRating(2)">☆</span>
+            <span class="star" onclick="selectRating(3)">☆</span>
+            <span class="star" onclick="selectRating(4)">☆</span>
+            <span class="star" onclick="selectRating(5)">☆</span>
+        </div>
+        <input type="text" id="feedback-comment" placeholder="추가 의견을 남겨주세요" class="border border-gray-300 rounded-lg py-2 px-4 mb-4 w-full">
+        <button onclick="submitFeedback()" class="bg-secondary text-white py-2 rounded-lg w-full">제출</button>
+        <button onclick="showHome()" class="bg-primary text-white py-2 rounded-lg w-full mt-4">홈으로 돌아가기</button>
+    </div>
+
+    <script>
+        let tasks = [];
+        let rating = 0;
+
+        function login() {
+            // 로그인 후 홈 화면으로 이동
+            document.getElementById('login').classList.add('hidden');
+            document.getElementById('home').classList.remove('hidden');
+            loadTasks();
+        }
+
+        function loadTasks() {
+            // localStorage에서 작업 로드
+            const savedTasks = localStorage.getItem('tasks');
+            tasks = savedTasks ? JSON.parse(savedTasks) : [];
+            renderTaskList();
+        }
+
+        function renderTaskList() {
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = 'border-b border-gray-200 py-3 flex justify-between';
+                li.innerHTML = `
+                    <span>${task.name}</span>
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-primary" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})">
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        function toggleTask(index) {
+            tasks[index].completed = !tasks[index].completed;
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTaskList();
+        }
+
+        function showTaskManagement() {
+            document.getElementById('home').classList.add('hidden');
+            document.getElementById('task-management').classList.remove('hidden');
+            renderTaskManagementList();
+        }
+
+        function renderTaskManagementList() {
+            const taskManagementList = document.getElementById('task-management-list');
+            taskManagementList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = 'border-b border-gray-200 py-3 flex justify-between';
+                li.innerHTML = `
+                    <span>${task.name}</span>
+                    <button class="text-red-500" onclick="deleteTask(${index})">삭제</button>
+                `;
+                taskManagementList.appendChild(li);
+            });
+        }
+
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTaskManagementList();
+        }
+
+        function showAddTask() {
+            document.getElementById('home').classList.add('hidden');
+            document.getElementById('add-task').classList.remove('hidden');
+        }
+
+        function addTask() {
+            const taskName = document.getElementById('new-task').value;
+            if (taskName) {
+                tasks.push({ name: taskName, completed: false });
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                document.getElementById('new-task').value = '';
+                showHome();
+                renderTaskList();
+            }
+        }
+
+        function showHome() {
+            document.getElementById('task-management').classList.add('hidden');
+            document.getElementById('add-task').classList.add('hidden');
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('home').classList.remove('hidden');
+            renderTaskList();
+        }
+
+        function selectRating(r) {
+            rating = r;
+            const stars = document.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                star.textContent = index < rating ? '★' : '☆';
+            });
+        }
+
+        function submitFeedback() {
+            const comment = document.getElementById('feedback-comment').value;
+            if (rating > 0) {
+                console.log(`Feedback submitted: Rating - ${rating}, Comment - ${comment}`);
+                alert('피드백이 제출되었습니다!');
+                showHome();
+            } else {
+                alert('평점을 선택해 주세요.');
+            }
+        }
+
+        // 초기화 함수
+        document.addEventListener('DOMContentLoaded', () => {
+            showHome();
+        });
+    </script>
+
+</body>
+</html>
